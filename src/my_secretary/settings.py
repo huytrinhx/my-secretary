@@ -16,7 +16,7 @@ KEYRING_USER = "openrouter"
 @dataclass
 class Settings:
     hotkey: str = "ctrl+alt"
-    transcription_model: str = "openai/whisper-large-v3-turbo"
+    transcription_model: str = "qwen/qwen3-asr-0.6b"
     cleanup_enabled: bool = True
     cleanup_model: str = "inception/mercury-2.5"
     inserter: str = "paste"  # "paste" or "type"

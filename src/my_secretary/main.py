@@ -8,7 +8,7 @@ from logging.handlers import RotatingFileHandler
 from my_secretary.cleaner import OpenRouterCleaner, PassthroughCleaner
 from my_secretary.dictation import Dictation
 from my_secretary.hotkey import HotkeyListener
-from my_secretary.net import check_connection, make_http_client
+from my_secretary.net import check_connection, make_http_client, warm_up
 from my_secretary.inserter import ClipboardPasteInserter, UnicodeTypingInserter
 from my_secretary.recorder import MicRecorder
 from my_secretary.settings import APP_DIR, load_api_key, load_settings, save_api_key
@@ -59,7 +59,11 @@ def main() -> None:
         on_error=on_error,
         on_state_change=tray.show_state,
     )
-    hotkey = HotkeyListener(settings.hotkey, dictation.press, dictation.release, dictation.cancel)
+    def press() -> None:
+        warm_up(http, api_key)  # runs while you speak
+        dictation.press()
+
+    hotkey = HotkeyListener(settings.hotkey, press, dictation.release, dictation.cancel)
     hotkey.start()
     log.info("ready: hotkey=%s model=%s cleanup=%s", settings.hotkey,
              settings.transcription_model, settings.cleanup_enabled and settings.cleanup_model)

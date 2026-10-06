@@ -32,9 +32,11 @@ Prices come from OpenRouter's `/api/v1/models` as of 2026-10-05. Both models can
 
 | Role | Default | Price | Why |
 |---|---|---|---|
-| Transcription Model | `openai/whisper-large-v3-turbo` | ~$0.0002 / min of audio | Among the cheapest on OpenRouter (tied with `qwen/qwen3-asr-0.6b`), quick, and strong on English. 2.25× cheaper than `whisper-large-v3` and 30× cheaper than `whisper-1`. |
+| Transcription Model | `qwen/qwen3-asr-0.6b` | ~$0.0002 / min of audio | Tied for cheapest and the fastest at that price. Measured 2026-10-06 behind Zscaler on 26 s of speech: 0.9 s warm, versus 2.0 s for `whisper-large-v3-turbo`. Punctuation is accurate too. Faster but pricier alternatives are `deepgram/nova-3` ($0.0043/min) and `nvidia/parakeet-tdt-0.6b-v3` ($0.0015/min). |
 | Cleanup Model | `inception/mercury-2.5`, reasoning off | $0.04 in / $0.15 out per M tokens | A diffusion LLM built for very high output speed, which is what governs Cleanup latency. |
 | Cleanup fallback (for settings) | `openai/gpt-4.1-nano` | $0.10 / $0.40 per M | A reliable instruction-follower if Mercury's quality turns out not to be good enough. |
+
+**Latency.** Connection state matters more than the model. A cold connection behind TLS inspection added 2–8 s per Dictation, and httpx's default 5 s keep-alive meant every Dictation started cold. So the HTTP client keeps connections for 90 s, and pressing the hotkey fires a background `GET /key` (`net.warm_up`) while you speak. Measured from a fully cold start (8 runs): transcription took 1.07 s median and 2.16 s worst, and release-to-text including Cleanup took 1.78 s median. The old setup measured 6.6 s median and 10.6 s worst.
 
 **Cost per Dictation** (30 s of speech, ~80 words): STT ≈ $0.0001, Cleanup (~250 tokens in, ~120 out) ≈ $0.00003. That is about **$0.00013**, or roughly 7,500 Dictations per dollar.
 

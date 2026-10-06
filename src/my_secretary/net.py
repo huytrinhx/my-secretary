@@ -2,6 +2,7 @@
 
 import logging
 import ssl
+import threading
 
 import httpx
 import truststore
@@ -9,6 +10,7 @@ import truststore
 log = logging.getLogger(__name__)
 
 OPENROUTER_URL = "https://openrouter.ai/api/v1"
+KEEPALIVE_SECONDS = 90.0
 
 
 def make_http_client() -> httpx.Client:
@@ -18,7 +20,24 @@ def make_http_client() -> httpx.Client:
     return httpx.Client(
         verify=truststore.SSLContext(ssl.PROTOCOL_TLS_CLIENT),
         headers={"X-Title": "My Secretary"},
+        # httpx drops idle connections after 5 s by default, shorter than a long
+        # Utterance, which would throw away the connection warm_up() just opened.
+        limits=httpx.Limits(keepalive_expiry=KEEPALIVE_SECONDS),
     )
+
+
+def warm_up(client: httpx.Client, api_key: str) -> None:
+    """Makes sure a live pooled connection to OpenRouter exists, in the background, so the
+    upload at release time does not pay for connection setup. Behind TLS inspection, a cold upload
+    was measured at ~2-5 s slower than a warm one. Failures are ignored."""
+
+    def ping():
+        try:
+            client.get(f"{OPENROUTER_URL}/key", headers={"Authorization": f"Bearer {api_key}"}, timeout=3.0)
+        except httpx.HTTPError:
+            pass
+
+    threading.Thread(target=ping, daemon=True, name="warm-up").start()
 
 
 def transport_error_kind(error: httpx.TransportError) -> str:

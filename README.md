@@ -23,7 +23,7 @@ Tray → *Open settings file*, edit it, then Tray → *Restart (apply settings)*
 | Key | Default | Notes |
 |---|---|---|
 | `hotkey` | `ctrl+alt` | Modifiers only (pressing another key mid-hold cancels, so Ctrl+Alt+T and similar shortcuts still work), or modifiers + one key, e.g. `ctrl+alt+space` |
-| `transcription_model` | `openai/whisper-large-v3-turbo` | Any model id that lists `transcription` as an output modality |
+| `transcription_model` | `qwen/qwen3-asr-0.6b` | Any model id that lists `transcription` as an output modality |
 | `cleanup_enabled` | `true` | `false` inserts the raw Transcript |
 | `cleanup_model` | `inception/mercury-2.5` | Compare models with `scripts/bench_cleanup.py` |
 | `inserter` | `paste` | `type` types out keystrokes and never touches the clipboard |
