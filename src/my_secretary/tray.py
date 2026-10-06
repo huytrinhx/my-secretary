@@ -1,3 +1,4 @@
+import logging
 import os
 import subprocess
 import sys
@@ -8,6 +9,8 @@ from PIL import Image, ImageDraw
 
 from my_secretary.dictation import State
 from my_secretary.settings import SETTINGS_FILE, save_api_key
+
+log = logging.getLogger(__name__)
 
 STATE_COLOURS = {
     State.IDLE: "#8a8f98",
@@ -50,7 +53,7 @@ class Tray:
             menu=pystray.Menu(
                 pystray.MenuItem("Test connection", self._run_connection_test),
                 pystray.MenuItem("Set OpenRouter API key…", self._set_api_key),
-                pystray.MenuItem("Open settings file", lambda: os.startfile(SETTINGS_FILE)),
+                pystray.MenuItem("Open settings file", open_settings_file),
                 pystray.MenuItem("Restart (apply settings)", self._restart),
                 pystray.MenuItem("Quit", lambda: self._icon.stop()),
             ),
@@ -90,6 +93,16 @@ class Tray:
     def _restart(self) -> None:
         subprocess.Popen(relaunch_command())
         self._icon.stop()
+
+
+def open_settings_file() -> None:
+    """Opens settings.json in the default app, or Notepad if the .json association is
+    missing or broken (os.startfile then fails with "Application not found")."""
+    try:
+        os.startfile(SETTINGS_FILE)
+    except OSError as error:
+        log.info("no working .json association (%s), using Notepad", error.winerror)
+        subprocess.Popen(["notepad.exe", str(SETTINGS_FILE)])
 
 
 def relaunch_command() -> list[str]:
