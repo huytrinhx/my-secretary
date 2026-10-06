@@ -1,7 +1,7 @@
 [project]
 name = "my-secretary"
 version = "0.1.0"
-description = "Add your description here"
+description = "Push-to-talk dictation tray app for Windows: hold Ctrl+Alt, speak, and cleaned-up text is pasted at the caret."
 authors = [
     { name = "Hewittt Trinh", email = "hewitt-trinh-2020@users.noreply.github.com" }
 ]
